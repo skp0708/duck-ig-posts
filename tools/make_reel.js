@@ -33,12 +33,12 @@ const css = `*{margin:0;padding:0;box-sizing:border-box}body{width:1080px;height
   const D = frames.map((_, i) => i === 0 ? 3 : i === frames.length - 1 ? 2.5 : i === frames.length - 2 ? 3.5 : 3.2);
   const args = ['-y'];
   frames.forEach((f, i) => args.push('-loop', '1', '-framerate', '30', '-t', String(D[i]), '-i', f));
-  args.push('-f', 'lavfi', '-t', '30', '-i', 'anullsrc=r=44100:cl=stereo');
+  args.push('-f', 'lavfi', '-t', '30', '-i', 'anullsrc=r=48000:cl=stereo');
   let fc = frames.map((_, i) => `[${i}:v]scale=1188:2112,zoompan=z='min(1+0.0009*on,1.1)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,format=yuv420p,setsar=1,settb=1/30,setpts=N/30/TB[v${i}]`).join(';');
   let last = 'v0', off = 0;
   for (let i = 1; i < frames.length; i++) { off += D[i - 1] - 0.4; fc += `;[${last}][v${i}]xfade=transition=slideleft:duration=0.4:offset=${off.toFixed(2)}[x${i}]`; last = `x${i}`; }
   const out = path.join(dir, 'reel.mp4');
-  args.push('-filter_complex', fc, '-map', `[${last}]`, '-map', `${frames.length}:a`, '-shortest', '-c:v', 'libx264', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', '30', '-b:v', '6M', '-maxrate', '8M', '-bufsize', '12M', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', out);
+  args.push('-filter_complex', fc, '-map', `[${last}]`, '-map', `${frames.length}:a`, '-shortest', '-c:v', 'libx264', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', '30', '-b:v', '3500k', '-maxrate', '5M', '-bufsize', '8M', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', out);
   execFileSync('ffmpeg', args, { stdio: ['ignore','ignore','pipe'] });
   console.log(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration,size:stream=codec_name,width,height', '-of', 'compact', out]).toString());
 })();
